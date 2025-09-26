@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include smpp_gateway *.css
+recursive-include smpp_gateway *.csv
+recursive-include smpp_gateway *.html
+recursive-include smpp_gateway *.ico
+recursive-include smpp_gateway *.js
+recursive-include smpp_gateway *.json
+recursive-include smpp_gateway *.md
+recursive-include smpp_gateway *.png
+recursive-include smpp_gateway *.py
+recursive-include smpp_gateway *.svg
+recursive-include smpp_gateway *.txt
+recursive-exclude smpp_gateway *.pyc
