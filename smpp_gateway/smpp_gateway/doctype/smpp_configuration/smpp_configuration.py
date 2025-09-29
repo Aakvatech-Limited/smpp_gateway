@@ -3,4 +3,4 @@ import frappe
 from frappe.model.document import Document
 
 class SMPPConfiguration(Document):
-   pass
+    pass
