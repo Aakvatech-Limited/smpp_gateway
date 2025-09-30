@@ -11,6 +11,96 @@ import json
 import re
 
 
+# SMPP Priority Mapping (SMPP v3.4 spec)
+# priority_flag must be 0-3 (numeric)
+PRIORITY_MAP = {
+    "Low": 0,
+    "Normal": 0,
+    "Medium": 1,
+    "High": 2,
+    "Urgent": 3,
+    "Very High": 3,
+    # Numeric values (for backward compatibility)
+    "0": 0,
+    "1": 1,
+    "2": 2,
+    "3": 3,
+}
+
+
+def normalize_priority(priority):
+    """
+    Convert human-readable priority to SMPP numeric priority (0-3)
+
+    According to SMPP v3.4 specification:
+    - 0: Level 0 (lowest priority / normal)
+    - 1: Level 1 priority (medium)
+    - 2: Level 2 priority (high)
+    - 3: Level 3 (highest priority / urgent)
+
+    Args:
+        priority: String priority ("Normal", "High", etc.) or numeric string/int
+
+    Returns:
+        int: SMPP priority flag (0-3)
+
+    Examples:
+        >>> normalize_priority("Normal")
+        0
+        >>> normalize_priority("High")
+        2
+        >>> normalize_priority("Urgent")
+        3
+        >>> normalize_priority(1)
+        1
+    """
+    if priority is None:
+        return 0
+
+    # If already numeric, validate and return
+    if isinstance(priority, int):
+        return max(0, min(3, priority))  # Clamp to 0-3
+
+    # Convert string to title case for mapping
+    priority_str = str(priority).strip().title()
+
+    # Try to get from map
+    if priority_str in PRIORITY_MAP:
+        return PRIORITY_MAP[priority_str]
+
+    # Try to parse as integer
+    try:
+        priority_int = int(priority)
+        return max(0, min(3, priority_int))  # Clamp to 0-3
+    except (ValueError, TypeError):
+        # Default to normal priority
+        frappe.log_error(
+            f"Invalid priority value: {priority}. Using default (0).",
+            "SMPP Priority Mapping"
+        )
+        return 0
+
+
+@frappe.whitelist()
+def get_priority_options():
+    """
+    Get available priority options for UI
+
+    Returns:
+        dict: Priority mapping with descriptions
+    """
+    return {
+        "options": [
+            {"value": "0", "label": "Normal (0)", "description": "Lowest priority"},
+            {"value": "1", "label": "Medium (1)", "description": "Level 1 priority"},
+            {"value": "2", "label": "High (2)", "description": "Level 2 priority"},
+            {"value": "3", "label": "Urgent (3)", "description": "Highest priority"}
+        ],
+        "mapping": PRIORITY_MAP,
+        "default": "0"
+    }
+
+
 @frappe.whitelist()
 def send_notification_sms(receiver_list, message, reference_doctype=None, reference_name=None,
                          smpp_config=None, priority="Normal", sender_id=None):
@@ -70,6 +160,9 @@ def send_notification_sms(receiver_list, message, reference_doctype=None, refere
         # Get SMPP client
         client = get_smpp_client(smpp_config)
 
+        # Normalize priority to SMPP numeric format (0-3)
+        numeric_priority = normalize_priority(priority)
+
         # Track results
         success_list = []
         failed_list = []
@@ -86,13 +179,13 @@ def send_notification_sms(receiver_list, message, reference_doctype=None, refere
                     failed_list.append(phone_number)
                     continue
 
-                # Create SMPP SMS Message
+                # Create SMPP SMS Message with numeric priority
                 sms_doc = frappe.get_doc({
                     "doctype": "SMPP SMS Message",
                     "recipient_number": phone_number,
                     "message_text": message,
                     "smpp_configuration": smpp_config,
-                    "priority": priority,
+                    "priority": str(numeric_priority),  # Convert to string for Select field
                     "sender_id": sender_id,
                     "reference_doctype": reference_doctype or "Notification",
                     "reference_name": reference_name or "Auto-sent",
