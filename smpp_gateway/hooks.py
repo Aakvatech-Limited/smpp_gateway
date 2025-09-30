@@ -3,7 +3,7 @@ from . import __version__ as app_version
 app_name = "smpp_gateway"
 app_title = "Smpp Gateway"
 app_publisher = "aakvatech"
-app_description = "Message transcever app"
+app_description = "SMPP integration for SMS messaging"
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "info@aakvatech.com"
@@ -31,6 +31,11 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
+doctype_js = {
+	"SMPP SMS Message": "public/js/smpp_sms_message.js",
+    "SMPP Configuration": "public/js/smpp_configuration.js",
+    "SMPP SMS Template": "public/js/smpp_sms_template.js"
+}
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -106,6 +111,17 @@ app_license = "MIT"
 # Scheduled Tasks
 # ---------------
 
+scheduler_events = {
+    "cron": {
+        "*/5 * * * *": [
+            "smpp_gateway.tasks.queue_processor.process_sms_queue"
+        ],
+        "*/1 * * * *": [
+            "smpp_gateway.tasks.connection_manager.check_smpp_connections"
+        ]
+    }
+}
+
 # scheduler_events = {
 #	"all": [
 #		"smpp_gateway.tasks.all"
@@ -161,25 +177,34 @@ app_license = "MIT"
 # --------------------
 
 user_data_fields = [
-	{
-		"doctype": "{doctype_1}",
-		"filter_by": "{filter_by}",
-		"redact_fields": ["{field_1}", "{field_2}"],
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_2}",
-		"filter_by": "{filter_by}",
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_3}",
-		"strict": False,
-	},
-	{
-		"doctype": "{doctype_4}"
-	}
+    {
+        "doctype": "SMPP SMS Message",
+        "filter_by": "owner",
+        "redact_fields": ["recipient_number", "message_text"],
+        "rename": None
+    }
 ]
+
+# user_data_fields = [
+# 	{
+# 		"doctype": "{doctype_1}",
+# 		"filter_by": "{filter_by}",
+# 		"redact_fields": ["{field_1}", "{field_2}"],
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_2}",
+# 		"filter_by": "{filter_by}",
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_3}",
+# 		"strict": False,
+# 	},
+# 	{
+# 		"doctype": "{doctype_4}"
+# 	}
+# ]
 
 # Authentication and authorization
 # --------------------------------

@@ -1,0 +1,136 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "naming_series:",
+    "creation": "2025-09-26 11:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+      "naming_series",
+      "connection_name",
+      "event_type",
+      "column_break_1",
+      "event_time",
+      "session_id",
+      "section_break_2",
+      "event_details",
+      "section_break_3",
+      "error_code",
+      "column_break_4",
+      "network_code",
+      "additional_info"
+    ],
+    "fields": [
+      {
+        "fieldname": "naming_series",
+        "fieldtype": "Select",
+        "label": "Series",
+        "options": "LOG-.YYYY.-.MM.-.#####",
+        "reqd": 1
+      },
+      {
+        "fieldname": "connection_name",
+        "fieldtype": "Link",
+        "in_list_view": 1,
+        "label": "SMPP Configuration",
+        "options": "SMPP Configuration",
+        "reqd": 1
+      },
+      {
+        "fieldname": "event_type",
+        "fieldtype": "Select",
+        "in_list_view": 1,
+        "label": "Event Type",
+        "options": "connect\ndisconnect\nbind_success\nbind_failed\nsend_message\nreceive_receipt\nenquire_link\ngeneric_nack\nerror\ntimeout\nreconnect",
+        "reqd": 1
+      },
+      {
+        "fieldname": "column_break_1",
+        "fieldtype": "Column Break"
+      },
+      {
+        "default": "now",
+        "fieldname": "event_time",
+        "fieldtype": "Datetime",
+        "in_list_view": 1,
+        "label": "Event Time",
+        "reqd": 1
+      },
+      {
+        "fieldname": "session_id",
+        "fieldtype": "Data",
+        "label": "Session ID"
+      },
+      {
+        "fieldname": "section_break_2",
+        "fieldtype": "Section Break",
+        "label": "Event Details"
+      },
+      {
+        "fieldname": "event_details",
+        "fieldtype": "Long Text",
+        "label": "Event Details"
+      },
+      {
+        "fieldname": "section_break_3",
+        "fieldtype": "Section Break",
+        "label": "Error Information"
+      },
+      {
+        "fieldname": "error_code",
+        "fieldtype": "Data",
+        "label": "Error Code"
+      },
+      {
+        "fieldname": "column_break_4",
+        "fieldtype": "Column Break"
+      },
+      {
+        "fieldname": "network_code",
+        "fieldtype": "Data",
+        "label": "Network Error Code"
+      },
+      {
+        "fieldname": "additional_info",
+        "fieldtype": "Long Text",
+        "label": "Additional Information"
+      }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2025-09-26 11:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "SMPP Gateway",
+    "name": "SMPP Connection Log",
+    "naming_rule": "By \"Naming Series\" field",
+    "owner": "Administrator",
+    "permissions": [
+      {
+        "create": 1,
+        "delete": 1,
+        "email": 1,
+        "export": 1,
+        "print": 1,
+        "read": 1,
+        "report": 1,
+        "role": "SMS Manager",
+        "share": 1,
+        "write": 1
+      },
+      {
+        "email": 1,
+        "export": 1,
+        "print": 1,
+        "read": 1,
+        "report": 1,
+        "role": "SMS User",
+        "share": 1
+      }
+    ],
+    "search_fields": "connection_name,event_type,event_time",
+    "sort_field": "event_time",
+    "sort_order": "DESC",
+    "title_field": "event_type",
+    "track_changes": 1
+  }
