@@ -59,7 +59,7 @@ doctype_js = {}
 
 # before_install = "smpp_gateway.install.before_install"
 # after_install = "smpp_gateway.install.after_install"
-after_migrate = " smpp_gateway.patches.add_smpp_sms_channel_to_notification.execute"
+after_migrate = "smpp_gateway.patches.add_smpp_sms_channel_to_notification.execute"
 
 # Uninstallation
 # ------------
