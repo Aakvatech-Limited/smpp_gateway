@@ -88,14 +88,20 @@ doctype_js = {}
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-#	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Notification": "smpp_gateway.smpp_gateway.overrides.notification_override.SMPPNotification"
+}
 
 # Document Events
 # ---------------
 # Hook on document methods and events
 
+doc_events = {
+	"Notification": {
+		"before_insert": "smpp_gateway.smpp_gateway.overrides.notification_override.validate_smpp_channel",
+		"on_update": "smpp_gateway.smpp_gateway.overrides.notification_override.validate_smpp_channel"
+	}
+}
 
 # doc_events = {
 #	"*": {
@@ -184,6 +190,22 @@ user_data_fields = [
         "filter_by": "owner",
         "redact_fields": ["recipient_number", "message_text"],
         "rename": None
+    }
+]
+
+# Fixtures
+# --------
+fixtures = [
+    {
+        "dt": "Property Setter",
+        "filters": [
+            [
+                "doc_type", "=", "Notification"
+            ],
+            [
+                "field_name", "=", "channel"
+            ]
+        ]
     }
 ]
 
