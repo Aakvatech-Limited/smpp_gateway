@@ -59,6 +59,7 @@ doctype_js = {}
 
 # before_install = "smpp_gateway.install.before_install"
 # after_install = "smpp_gateway.install.after_install"
+after_migrate = " smpp_gateway.patches.add_smpp_sms_channel_to_notification.execute"
 
 # Uninstallation
 # ------------
@@ -190,22 +191,6 @@ user_data_fields = [
         "filter_by": "owner",
         "redact_fields": ["recipient_number", "message_text"],
         "rename": None
-    }
-]
-
-# Fixtures
-# --------
-fixtures = [
-    {
-        "dt": "Property Setter",
-        "filters": [
-            [
-                "doc_type", "=", "Notification"
-            ],
-            [
-                "field_name", "=", "channel"
-            ]
-        ]
     }
 ]
 
