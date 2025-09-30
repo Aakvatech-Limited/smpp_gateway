@@ -32,6 +32,7 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {
+
 	"SMPP SMS Message": "public/js/smpp_sms_message.js",
     "SMPP Configuration": "public/js/smpp_configuration.js",
     "SMPP SMS Template": "public/js/smpp_sms_template.js"
@@ -100,6 +101,18 @@ doctype_js = {
 # ---------------
 # Hook on document methods and events
 
+doc_events = {
+    "Sales Order": {
+        "on_submit": "smpp_gateway.utils.erpnext_integration.on_sales_order_submit"
+    },
+    "Delivery Note": {
+        "on_submit": "smpp_gateway.utils.erpnext_integration.on_delivery_note_submit"
+    },
+    "Payment Entry": {
+        "on_submit": "smpp_gateway.utils.erpnext_integration.on_payment_entry_submit"
+    }
+}
+
 # doc_events = {
 #	"*": {
 #		"on_update": "method",
@@ -113,14 +126,22 @@ doctype_js = {
 
 scheduler_events = {
     "cron": {
+        # Process SMS queue every 5 minutes
         "*/5 * * * *": [
             "smpp_gateway.tasks.queue_processor.process_sms_queue"
         ],
+        # Check SMPP connections every minute
         "*/1 * * * *": [
             "smpp_gateway.tasks.connection_manager.check_smpp_connections"
+        ],
+        # Daily cleanup at 2 AM
+        "0 2 * * *": [
+            "smpp_gateway.tasks.connection_manager.cleanup_old_logs"
         ]
     }
 }
+
+
 
 # scheduler_events = {
 #	"all": [
