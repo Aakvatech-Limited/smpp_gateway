@@ -372,3 +372,38 @@ def send_template_sms(template_name, recipients, template_data=None):
     except Exception as e:
         frappe.log_error(f"Template SMS error: {str(e)}", "SMPP Template SMS Error")
         frappe.throw(_("Failed to send template SMS: {0}").format(str(e)))
+
+
+@frappe.whitelist()
+def get_sms_status(sms_id):
+    """
+    Get status of an SMS message
+
+    Args:
+        sms_id: Name of SMPP SMS Message document
+
+    Returns:
+        dict: SMS status information
+    """
+    try:
+        sms_doc = frappe.get_doc("SMPP SMS Message", sms_id)
+
+        return {
+            "success": True,
+            "status": sms_doc.status,
+            "smpp_status": sms_doc.smpp_status,
+            "message_id": sms_doc.message_id,
+            "sent_time": sms_doc.sent_time,
+            "delivered_time": sms_doc.delivered_time,
+            "error_code": sms_doc.error_code,
+            "error_message": sms_doc.error_message,
+            "recipient_number": sms_doc.recipient_number,
+            "sender_id": sms_doc.sender_id
+        }
+
+    except Exception as e:
+        frappe.log_error(f"Failed to get SMS status: {str(e)}", "SMPP SMS Status Error")
+        return {
+            "success": False,
+            "message": str(e)
+        }
