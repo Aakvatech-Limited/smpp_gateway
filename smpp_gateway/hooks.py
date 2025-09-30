@@ -112,11 +112,11 @@ scheduler_events = {
     "cron": {
         # Process SMS queue every 5 minutes
         "*/5 * * * *": [
-            "smpp_gateway.tasks.queue_processor.process_sms_queue"
+            "smpp_gateway.smpp_gateway.tasks.queue_processor.process_sms_queue"
         ],
         # Check SMPP connections every minute
         "*/1 * * * *": [
-            "smpp_gateway.tasks.connection_manager.check_smpp_connections"
+            "smpp_gateway.smpp_gateway.tasks.connection_manager.check_smpp_connections"
         ], 
         
     }

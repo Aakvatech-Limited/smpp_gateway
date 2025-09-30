@@ -1,16 +1,15 @@
 import threading
 import time
-from frappe.utils import now, get_datetime, cint
-from smpp_gateway.api.smpp_client import get_smpp_client
+from frappe.utils import now, get_datetime, cint, add_to_date
+from smpp_gateway.smpp_gateway.api.smpp_client import get_smpp_client
+import frappe
 
 def process_sms_queue():
     """Process SMS queue - called by scheduler every 5 minutes"""
     try:
-        if not frappe.db:
-            return
-            
+
         # Get pending queue items
-        queue_items = frappe.get_all("SMPP SMS Queue",
+        queue_items = frappe.db.get_all("SMPP SMS Queue",
                                    filters={
                                        "status": ["in", ["Pending", "Retrying"]],
                                        "scheduled_for": ["<=", now()],
