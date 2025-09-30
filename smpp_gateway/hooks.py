@@ -31,7 +31,9 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {}
+doctype_js = {
+	"Notification": "public/js/notification.js"
+}
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -59,6 +61,9 @@ doctype_js = {}
 
 # before_install = "smpp_gateway.install.before_install"
 # after_install = "smpp_gateway.install.after_install"
+
+# After Migrate
+# -------------
 after_migrate = "smpp_gateway.patches.add_smpp_sms_channel_to_notification.execute"
 
 # Uninstallation
