@@ -407,3 +407,108 @@ def get_sms_status(sms_id):
             "success": False,
             "message": str(e)
         }
+
+
+@frappe.whitelist()
+def get_smpp_connection_status(config_name=None):
+    """
+    Get SMPP connection status
+
+    Args:
+        config_name: Name of SMPP Configuration (optional, uses default if not provided)
+
+    Returns:
+        dict: Connection status information
+    """
+    try:
+        # Get configuration
+        if not config_name:
+            config_name = frappe.db.get_value("SMPP Configuration",
+                                             {"is_default": 1, "is_active": 1},
+                                             "name")
+
+        if not config_name:
+            return {
+                "success": False,
+                "connected": False,
+                "message": "No active SMPP Configuration found"
+            }
+
+        config = frappe.get_doc("SMPP Configuration", config_name)
+
+        # Try to get client and check connection
+        from smpp_gateway.smpp_gateway.api.smpp_client import get_smpp_client
+
+        try:
+            client = get_smpp_client(config_name)
+
+            return {
+                "success": True,
+                "connected": client.connected,
+                "config_name": config.configuration_name,
+                "smsc_host": config.smsc_host,
+                "smsc_port": config.smsc_port,
+                "system_id": config.system_id,
+                "bind_type": config.bind_type,
+                "message": "Connected" if client.connected else "Not connected"
+            }
+
+        except Exception as conn_error:
+            return {
+                "success": True,
+                "connected": False,
+                "config_name": config.configuration_name,
+                "smsc_host": config.smsc_host,
+                "smsc_port": config.smsc_port,
+                "message": f"Connection error: {str(conn_error)}"
+            }
+
+    except Exception as e:
+        frappe.log_error(f"Failed to get SMPP connection status: {str(e)}",
+                        "SMPP Connection Status Error")
+        return {
+            "success": False,
+            "connected": False,
+            "message": str(e)
+        }
+
+
+@frappe.whitelist()
+def test_smpp_connection(config_name):
+    """
+    Test SMPP connection
+
+    Args:
+        config_name: Name of SMPP Configuration
+
+    Returns:
+        dict: Test result
+    """
+    try:
+        from smpp_gateway.smpp_gateway.api.smpp_client import get_smpp_client
+
+        # Get or create client
+        client = get_smpp_client(config_name)
+
+        # Try to connect
+        if not client.connected:
+            client.connect()
+
+        if client.connected:
+            return {
+                "success": True,
+                "message": "Successfully connected to SMSC"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to connect to SMSC"
+            }
+
+    except Exception as e:
+        frappe.log_error(f"SMPP connection test failed: {str(e)}",
+                        "SMPP Connection Test Error")
+        return {
+            "success": False,
+            "message": str(e)
+        }
