@@ -194,25 +194,18 @@ def send_notification_sms(receiver_list, message, reference_doctype=None, refere
                 sms_doc.insert(ignore_permissions=True)
                 sms_message_names.append(sms_doc.name)
 
-                # Send via SMPP
-                result = client.send_sms(
-                    recipient_number=phone_number,
-                    message_text=message,
-                    sender_id=sender_id
-                )
+                # Send via SMPP - pass the document object, not individual parameters
+                result = client.send_sms(sms_doc)
 
                 if result.get('success'):
                     success_list.append(phone_number)
-                    sms_doc.status = "Sent"
-                    sms_doc.message_id = result.get('message_id')
-                    sms_doc.sent_time = frappe.utils.now()
+                    # Status is already updated by client.send_sms()
                 else:
                     failed_list.append(phone_number)
-                    sms_doc.status = "Failed"
-                    sms_doc.error_message = result.get('error', 'Unknown error')
+                    # Error is already logged by client.send_sms()
 
-                sms_doc.save(ignore_permissions=True)
-                frappe.db.commit()
+                # Reload document to get updated status
+                sms_doc.reload()
 
             except Exception as e:
                 error_msg = str(e)
