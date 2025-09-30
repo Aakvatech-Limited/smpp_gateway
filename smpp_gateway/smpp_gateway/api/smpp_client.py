@@ -59,11 +59,8 @@ class SMPPClient:
 
                 # Get decrypted password from Frappe's password manager
                 # Password fieldtype stores encrypted values
-                decrypted_password = frappe.utils.password.get_password(
-                    "SMPP Configuration",
-                    self.config.name,
-                    "password"
-                )
+                # Use the document's get_password() method
+                decrypted_password = self.config.get_password("password", raise_exception=False)
 
                 if not decrypted_password:
                     frappe.throw("Failed to retrieve SMPP password. Please check SMPP Configuration.")
