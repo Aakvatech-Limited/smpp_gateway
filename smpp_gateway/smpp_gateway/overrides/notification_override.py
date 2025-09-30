@@ -134,7 +134,7 @@ class SMPPNotification(Notification):
             
             # Get phone numbers from users with specific role
             elif recipient.receiver_by_role:
-                users = frappe.get_all(
+                users = frappe.db.get_all(
                     "Has Role",
                     filters={"role": recipient.receiver_by_role, "parenttype": "User"},
                     fields=["parent"]
@@ -164,7 +164,7 @@ def validate_smpp_channel(doc, method=None):
     """
     if doc.channel == "SMPP SMS":
         # Check if SMPP is configured
-        smpp_configs = frappe.get_all(
+        smpp_configs = frappe.db.get_all(
             "SMPP Configuration",
             filters={"is_active": 1},
             limit=1
