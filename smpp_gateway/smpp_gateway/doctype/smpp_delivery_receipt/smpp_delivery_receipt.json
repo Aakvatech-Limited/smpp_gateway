@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "actions": [],
     "allow_rename": 1,
     "autoname": "naming_series:",
@@ -191,3 +192,194 @@
     "title_field": "receipted_message_id",
     "track_changes": 1
   }
+=======
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-09-26 11:15:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "original_message",
+  "receipted_message_id",
+  "column_break_1",
+  "recipient_number",
+  "final_status",
+  "section_break_2",
+  "submit_date",
+  "done_date",
+  "column_break_3",
+  "delivered_parts",
+  "total_parts",
+  "section_break_4",
+  "error_code",
+  "error_text",
+  "column_break_5",
+  "network_code",
+  "network_error_text",
+  "section_break_6",
+  "raw_receipt_data",
+  "processed_time"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "DR-.YYYY.-.MM.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "original_message",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Original SMS Message",
+   "options": "SMPP SMS Message",
+   "reqd": 1
+  },
+  {
+   "fieldname": "receipted_message_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "SMSC Message ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "recipient_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Recipient Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "final_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Final Status",
+   "options": "DELIVRD\nEXPIRED\nDELETED\nUNDELIV\nACCEPTD\nUNKNOWN\nREJECTD",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Timing Information"
+  },
+  {
+   "fieldname": "submit_date",
+   "fieldtype": "Datetime",
+   "label": "Submit Date"
+  },
+  {
+   "fieldname": "done_date",
+   "fieldtype": "Datetime",
+   "label": "Done Date"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "delivered_parts",
+   "fieldtype": "Int",
+   "label": "Delivered Parts"
+  },
+  {
+   "default": "1",
+   "fieldname": "total_parts",
+   "fieldtype": "Int",
+   "label": "Total Parts"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break",
+   "label": "Error Information"
+  },
+  {
+   "fieldname": "error_code",
+   "fieldtype": "Data",
+   "label": "Error Code"
+  },
+  {
+   "fieldname": "error_text",
+   "fieldtype": "Long Text",
+   "label": "Error Text"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "network_code",
+   "fieldtype": "Data",
+   "label": "Network Code"
+  },
+  {
+   "fieldname": "network_error_text",
+   "fieldtype": "Long Text",
+   "label": "Network Error Text"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break",
+   "label": "Raw Data"
+  },
+  {
+   "fieldname": "raw_receipt_data",
+   "fieldtype": "Long Text",
+   "label": "Raw Receipt Data"
+  },
+  {
+   "default": "now",
+   "fieldname": "processed_time",
+   "fieldtype": "Datetime",
+   "label": "Processed Time",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-09-29 18:13:07.605698",
+ "modified_by": "Administrator",
+ "module": "Smpp Gateway",
+ "name": "SMPP Delivery Receipt",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "SMS Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "SMS User",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "original_message,receipted_message_id,final_status",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "receipted_message_id",
+ "track_changes": 1
+}
+>>>>>>> 1de45afe3b05b2e392b5706927a577f596c702c7
