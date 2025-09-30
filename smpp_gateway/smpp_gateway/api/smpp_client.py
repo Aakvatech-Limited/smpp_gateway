@@ -56,24 +56,35 @@ class SMPPClient:
             with self.lock:
                 if self.connected:
                     return True
-                
+
+                # Get decrypted password from Frappe's password manager
+                # Password fieldtype stores encrypted values
+                decrypted_password = frappe.utils.password.get_password(
+                    "SMPP Configuration",
+                    self.config.name,
+                    "password"
+                )
+
+                if not decrypted_password:
+                    frappe.throw("Failed to retrieve SMPP password. Please check SMPP Configuration.")
+
                 # Create client
                 self.client = smpplib.client.Client(
                     self.config.smsc_host,
                     int(self.config.smsc_port),
                     timeout=int(self.config.connection_timeout)
                 )
-                
+
                 # Connect to SMSC
                 self.client.connect()
-                
+
                 # Determine bind type and perform bind
                 bind_type = self.config.bind_type.lower()
-                
+
                 if bind_type == "transmitter":
                     self.client.bind_transmitter(
                         system_id=self.config.system_id,
-                        password=self.config.password,
+                        password=decrypted_password,  # Use decrypted password
                         system_type=self.config.system_type or "",
                         interface_version=int(self.config.interface_version.replace('0x', ''), 16),
                         addr_ton=int(self.config.addr_ton),
@@ -83,7 +94,7 @@ class SMPPClient:
                 elif bind_type == "receiver":
                     self.client.bind_receiver(
                         system_id=self.config.system_id,
-                        password=self.config.password,
+                        password=decrypted_password,  # Use decrypted password
                         system_type=self.config.system_type or "",
                         interface_version=int(self.config.interface_version.replace('0x', ''), 16),
                         addr_ton=int(self.config.addr_ton),
@@ -93,22 +104,22 @@ class SMPPClient:
                 else:  # transceiver
                     self.client.bind_transceiver(
                         system_id=self.config.system_id,
-                        password=self.config.password,
+                        password=decrypted_password,  # Use decrypted password
                         system_type=self.config.system_type or "",
                         interface_version=int(self.config.interface_version.replace('0x', ''), 16),
                         addr_ton=int(self.config.addr_ton),
                         addr_npi=int(self.config.addr_npi),
                         address_range=self.config.address_range or ""
                     )
-                
+
                 self.connected = True
                 self._log_connection_event("bind_success", "Successfully connected to SMSC")
-                
+
                 # Start enquire link thread
                 self._start_enquire_link()
-                
+
                 return True
-                
+
         except Exception as e:
             error_msg = f"Failed to connect to SMSC: {str(e)}"
             self.logger.error(error_msg)
