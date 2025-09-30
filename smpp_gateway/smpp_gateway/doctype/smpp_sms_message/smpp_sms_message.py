@@ -10,6 +10,7 @@ class SMPPSMSMessage(Document):
         self.validate_phone_number()
         self.validate_message_content()
         self.set_default_config()
+        self.set_default_sender_id()
         self.calculate_message_stats()
     
     def validate_phone_number(self):
@@ -35,13 +36,20 @@ class SMPPSMSMessage(Document):
     def set_default_config(self):
         """Set default SMPP configuration if not specified"""
         if not self.smpp_configuration:
-            default_config = frappe.db.get_value("SMPP Configuration", 
+            default_config = frappe.db.get_value("SMPP Configuration",
                                                 {"is_default": 1, "is_active": 1}, "name")
             if default_config:
                 self.smpp_configuration = default_config
             else:
                 frappe.throw("No default SMPP configuration found")
-    
+
+    def set_default_sender_id(self):
+        """Set default sender ID from SMPP configuration if not specified"""
+        if not self.sender_id and self.smpp_configuration:
+            config = frappe.get_doc("SMPP Configuration", self.smpp_configuration)
+            # Use default_sender_id from config, or fallback to system_id
+            self.sender_id = config.get("default_sender_id") or config.system_id
+
     def calculate_message_stats(self):
         """Calculate message statistics"""
         if not self.message_text:

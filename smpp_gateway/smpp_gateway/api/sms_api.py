@@ -157,6 +157,13 @@ def send_notification_sms(receiver_list, message, reference_doctype=None, refere
         if not smpp_config:
             frappe.throw(_("No active SMPP Configuration found. Please configure SMPP Gateway."))
 
+        # Get SMPP Configuration document to access default sender ID
+        config_doc = frappe.get_doc("SMPP Configuration", smpp_config)
+
+        # Use sender_id if provided, otherwise use default from config, or fallback to system_id
+        if not sender_id:
+            sender_id = config_doc.get("default_sender_id") or config_doc.system_id
+
         # Get SMPP client
         client = get_smpp_client(smpp_config)
 
@@ -186,7 +193,8 @@ def send_notification_sms(receiver_list, message, reference_doctype=None, refere
                     "message_text": message,
                     "smpp_configuration": smpp_config,
                     "priority": str(numeric_priority),  # Convert to string for Select field
-                    "sender_id": sender_id,
+                    "sender_id": sender_id,  # Now uses default from config if not provided
+                    "registered_delivery": 1,  # Always request delivery receipts
                     "reference_doctype": reference_doctype or "Notification",
                     "reference_name": reference_name or "Auto-sent",
                     "status": "Draft"
