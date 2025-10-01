@@ -302,7 +302,64 @@ class SMPPClient:
                     
         except Exception as e:
             self.logger.error(f"Error processing delivery receipts: {str(e)}")
-    
+
+    def query_message_status(self, message_id, source_addr=""):
+        """Query message status using query_sm PDU"""
+        try:
+            if not self.connected:
+                self.connect()
+
+            # Prepare query_sm parameters
+            query_params = {
+                'message_id': str(message_id),
+                'source_addr_ton': int(self.config.addr_ton),
+                'source_addr_npi': int(self.config.addr_npi),
+                'source_addr': source_addr
+            }
+
+            # Create and send query_sm PDU
+            import smpplib.smpp as smpp
+            query_pdu = smpp.make_pdu('query_sm', **query_params)
+
+            self.client.send_pdu(query_pdu)
+            response_pdu = self.client.read_pdu()
+
+            if response_pdu and response_pdu.command == 'query_sm_resp':
+                # Parse response
+                result = {
+                    "success": True,
+                    "message_id": getattr(response_pdu, 'message_id', message_id),
+                    "message_state": getattr(response_pdu, 'message_state', None),
+                    "final_date": getattr(response_pdu, 'final_date', None),
+                    "error_code": getattr(response_pdu, 'error_code', None)
+                }
+
+                # Map message state to human readable status
+                state_mapping = {
+                    1: "ENROUTE",
+                    2: "DELIVERED",
+                    3: "EXPIRED",
+                    4: "DELETED",
+                    5: "UNDELIVERABLE",
+                    6: "ACCEPTED",
+                    7: "UNKNOWN",
+                    8: "REJECTED"
+                }
+
+                result["message_state_text"] = state_mapping.get(result["message_state"], "UNKNOWN")
+
+                self.logger.info(f"Query SM successful for message {message_id}: {result['message_state_text']}")
+                return result
+            else:
+                error_msg = f"Invalid response to query_sm: {response_pdu.command if response_pdu else 'No response'}"
+                self.logger.error(error_msg)
+                return {"success": False, "error": error_msg}
+
+        except Exception as e:
+            error_msg = f"Query SM failed for message {message_id}: {str(e)}"
+            self.logger.error(error_msg)
+            return {"success": False, "error": error_msg}
+
     def _process_delivery_receipt(self, pdu):
         """Process individual delivery receipt"""
         try:

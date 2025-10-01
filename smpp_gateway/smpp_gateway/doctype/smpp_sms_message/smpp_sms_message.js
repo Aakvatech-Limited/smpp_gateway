@@ -134,8 +134,14 @@ function add_message_preview(frm) {
 }
 
 function check_delivery_status(frm) {
+    // Show loading indicator
+    frappe.show_alert({
+        message: __('Querying delivery status from SMSC...'),
+        indicator: 'blue'
+    }, 3);
+
     frappe.call({
-        method: 'smpp_gateway.smpp_gateway.api.sms_api.get_sms_status',
+        method: 'smpp_gateway.smpp_gateway.api.sms_api.query_sms_delivery_status',
         args: {
             sms_id: frm.doc.name
         },
@@ -143,22 +149,72 @@ function check_delivery_status(frm) {
             if (r.message && r.message.success) {
                 const status_html = `
                     <table class="table table-bordered">
-                        <tr><th>Status</th><td>${r.message.status}</td></tr>
-                        <tr><th>SMPP Status</th><td>${r.message.smpp_status || 'N/A'}</td></tr>
+                        <tr><th>Message ID</th><td>${r.message.message_id || 'N/A'}</td></tr>
+                        <tr><th>Status</th><td><span class="indicator ${get_status_indicator(r.message.status)}">${r.message.status}</span></td></tr>
+                        <tr><th>SMPP Status</th><td><span class="badge badge-${get_smpp_status_color(r.message.smpp_status)}">${r.message.smpp_status || 'N/A'}</span></td></tr>
+                        <tr><th>Recipient</th><td>${r.message.recipient_number || 'N/A'}</td></tr>
+                        <tr><th>Sender ID</th><td>${r.message.sender_id || 'N/A'}</td></tr>
                         <tr><th>Sent Time</th><td>${r.message.sent_time || 'N/A'}</td></tr>
                         <tr><th>Delivered Time</th><td>${r.message.delivered_time || 'N/A'}</td></tr>
-                        <tr><th>Error</th><td>${r.message.error_message || 'None'}</td></tr>
+                        ${r.message.final_date ? `<tr><th>Final Date</th><td>${r.message.final_date}</td></tr>` : ''}
+                        ${r.message.error_code ? `<tr><th>Error Code</th><td>${r.message.error_code}</td></tr>` : ''}
                     </table>
+                    <div class="mt-3">
+                        <small class="text-muted">Status queried directly from SMSC using query_sm PDU</small>
+                    </div>
                 `;
 
                 frappe.msgprint({
                     title: __('SMS Delivery Status'),
                     message: status_html,
-                    indicator: 'blue'
+                    indicator: get_status_indicator(r.message.status)
+                });
+
+                // Refresh the form to show updated status
+                frm.reload_doc();
+            } else {
+                frappe.msgprint({
+                    title: __('Query Failed'),
+                    message: r.message ? r.message.message : 'Failed to query delivery status',
+                    indicator: 'red'
                 });
             }
+        },
+        error: function (r) {
+            frappe.msgprint({
+                title: __('Error'),
+                message: 'Failed to query delivery status. Please check your SMPP connection.',
+                indicator: 'red'
+            });
         }
     });
+}
+
+function get_status_indicator(status) {
+    const indicators = {
+        'Draft': 'grey',
+        'Queued': 'orange',
+        'Sent': 'blue',
+        'Delivered': 'green',
+        'Failed': 'red',
+        'Expired': 'red',
+        'Rejected': 'red'
+    };
+    return indicators[status] || 'grey';
+}
+
+function get_smpp_status_color(smpp_status) {
+    const colors = {
+        'DELIVERED': 'success',
+        'ENROUTE': 'info',
+        'EXPIRED': 'danger',
+        'UNDELIVERABLE': 'danger',
+        'DELETED': 'danger',
+        'ACCEPTED': 'success',
+        'REJECTED': 'danger',
+        'UNKNOWN': 'warning'
+    };
+    return colors[smpp_status] || 'secondary';
 }
 
 function setup_status_refresh(frm) {

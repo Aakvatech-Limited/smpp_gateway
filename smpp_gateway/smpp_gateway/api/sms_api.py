@@ -410,6 +410,118 @@ def get_sms_status(sms_id):
 
 
 @frappe.whitelist()
+def query_sms_delivery_status(sms_id):
+    """
+    Query SMS delivery status using SMPP query_sm PDU
+
+    Args:
+        sms_id: Name of SMPP SMS Message document
+
+    Returns:
+        dict: Delivery status information from SMSC
+    """
+    try:
+        sms_doc = frappe.get_doc("SMPP SMS Message", sms_id)
+
+        # Check if message has been sent and has message_id
+        if not sms_doc.message_id:
+            return {
+                "success": False,
+                "message": "Message has not been sent yet or message ID is missing"
+            }
+
+        if sms_doc.status not in ["Sent", "Delivered", "Failed", "Expired"]:
+            return {
+                "success": False,
+                "message": f"Cannot query status for message in '{sms_doc.status}' state"
+            }
+
+        # Get SMPP client
+        from smpp_gateway.smpp_gateway.api.smpp_client import get_smpp_client
+
+        config_name = sms_doc.smpp_configuration
+        if not config_name:
+            # Get default configuration
+            config_name = frappe.db.get_value("SMPP Configuration",
+                                             {"is_default": 1, "is_active": 1},
+                                             "name")
+
+        if not config_name:
+            return {
+                "success": False,
+                "message": "No active SMPP Configuration found"
+            }
+
+        client = get_smpp_client(config_name)
+
+        # Query message status using query_sm PDU
+        result = client.query_message_status(
+            message_id=sms_doc.message_id,
+            source_addr=sms_doc.sender_id or ""
+        )
+
+        if result.get("success"):
+            # Update SMS document with latest status from SMSC
+            message_state = result.get("message_state")
+            message_state_text = result.get("message_state_text")
+
+            # Map SMPP message states to our status values
+            status_mapping = {
+                "ENROUTE": "Sent",
+                "DELIVERED": "Delivered",
+                "EXPIRED": "Expired",
+                "DELETED": "Failed",
+                "UNDELIVERABLE": "Failed",
+                "ACCEPTED": "Delivered",
+                "UNKNOWN": "Failed",
+                "REJECTED": "Rejected"
+            }
+
+            new_status = status_mapping.get(message_state_text, sms_doc.status)
+
+            # Update document if status changed
+            if new_status != sms_doc.status or message_state_text != sms_doc.smpp_status:
+                update_data = {
+                    "status": new_status,
+                    "smpp_status": message_state_text
+                }
+
+                # Set delivered time if message was delivered
+                if new_status == "Delivered" and not sms_doc.delivered_time:
+                    update_data["delivered_time"] = now()
+
+                frappe.db.set_value("SMPP SMS Message", sms_id, update_data)
+                frappe.db.commit()
+
+            return {
+                "success": True,
+                "message_id": sms_doc.message_id,
+                "status": new_status,
+                "smpp_status": message_state_text,
+                "message_state": message_state,
+                "final_date": result.get("final_date"),
+                "error_code": result.get("error_code"),
+                "sent_time": sms_doc.sent_time,
+                "delivered_time": sms_doc.delivered_time,
+                "recipient_number": sms_doc.recipient_number,
+                "sender_id": sms_doc.sender_id,
+                "message": f"Status queried successfully: {message_state_text}"
+            }
+        else:
+            return {
+                "success": False,
+                "message": f"Failed to query status: {result.get('error', 'Unknown error')}"
+            }
+
+    except Exception as e:
+        frappe.log_error(f"Failed to query SMS delivery status: {str(e)}", "SMPP Query Status Error")
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+
+@frappe.whitelist()
 def get_smpp_connection_status(config_name=None):
     """
     Get SMPP connection status

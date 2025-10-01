@@ -64,3 +64,69 @@ class SMPPSMSMessage(Document):
             sms_parts = 1 if message_length <= 160 else (message_length - 1) // 153 + 1
         
         self.data_coding = "8" if is_unicode else "0"
+
+    def query_delivery_status(self):
+        """Query delivery status from SMSC using query_sm PDU"""
+        if not self.message_id:
+            frappe.throw("Cannot query status: Message ID is missing")
+
+        if self.status not in ["Sent", "Delivered", "Failed", "Expired"]:
+            frappe.throw(f"Cannot query status for message in '{self.status}' state")
+
+        try:
+            from smpp_gateway.smpp_gateway.api.smpp_client import get_smpp_client
+
+            config_name = self.smpp_configuration
+            if not config_name:
+                # Get default configuration
+                config_name = frappe.db.get_value("SMPP Configuration",
+                                                 {"is_default": 1, "is_active": 1},
+                                                 "name")
+
+            if not config_name:
+                frappe.throw("No active SMPP Configuration found")
+
+            client = get_smpp_client(config_name)
+
+            # Query message status using query_sm PDU
+            result = client.query_message_status(
+                message_id=self.message_id,
+                source_addr=self.sender_id or ""
+            )
+
+            if result.get("success"):
+                # Update status based on SMSC response
+                message_state_text = result.get("message_state_text")
+
+                # Map SMPP message states to our status values
+                status_mapping = {
+                    "ENROUTE": "Sent",
+                    "DELIVERED": "Delivered",
+                    "EXPIRED": "Expired",
+                    "DELETED": "Failed",
+                    "UNDELIVERABLE": "Failed",
+                    "ACCEPTED": "Delivered",
+                    "UNKNOWN": "Failed",
+                    "REJECTED": "Rejected"
+                }
+
+                new_status = status_mapping.get(message_state_text, self.status)
+
+                # Update document if status changed
+                if new_status != self.status or message_state_text != self.smpp_status:
+                    self.status = new_status
+                    self.smpp_status = message_state_text
+
+                    # Set delivered time if message was delivered
+                    if new_status == "Delivered" and not self.delivered_time:
+                        self.delivered_time = now()
+
+                    self.save()
+
+                return result
+            else:
+                frappe.throw(f"Failed to query status: {result.get('error', 'Unknown error')}")
+
+        except Exception as e:
+            frappe.log_error(f"Failed to query SMS delivery status: {str(e)}", "SMPP Query Status Error")
+            frappe.throw(f"Query failed: {str(e)}")
