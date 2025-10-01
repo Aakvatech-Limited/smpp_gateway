@@ -87,21 +87,25 @@
             "fieldname": "interface_version",
             "fieldtype": "Select",
             "label": "Interface Version",
-            "options": "0x33\n0x34"
+            "options": "0x33\n0x34",
+            "description": "indicates the version of the SMPP protocol"
         },
         {
             "default": "0",
             "fieldname": "addr_ton",
             "fieldtype": "Select",
             "label": "Address TON",
-            "options": "0\n1\n2\n3\n4\n5\n6"
+            "options": "0\n1\n2\n3\n4\n5\n6",
+            "description": "TON = 5 (Alphanumeric) is for text-based sender IDs like 'MYCOMPANY', 'ALERT', 'BANK' - not numeric phone numbers"
         },
         {
             "default": "0",
             "fieldname": "addr_npi",
             "fieldtype": "Select",
             "label": "Address NPI",
-            "options": "0\n1\n3\n4\n6\n8\n9\n10\n14\n18"
+            "options": "0\n1\n3\n4\n6\n8\n9\n10\n14\n18",
+            "description": "NPI = 1 (ISDN/E.164) is for numeric phone numbers following international standards"
+
         },
         {
             "fieldname": "column_break_3",
@@ -110,7 +114,8 @@
         {
             "fieldname": "address_range",
             "fieldtype": "Data",
-            "label": "Address Range"
+            "label": "Address Range",
+            "description": "Messages addressed to any destination in this range shall be routed to the ESME"
         },
         {
             "default": "transceiver",
