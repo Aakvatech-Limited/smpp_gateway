@@ -194,9 +194,10 @@ class SMPPClient:
             
             # Send message
             pdu = self.client.send_message(**submit_params)
-            
+
             # Update SMS document with SMSC response
-            message_id = pdu.receipted_message_id if hasattr(pdu, 'receipted_message_id') else str(pdu.sequence)
+            # Extract the actual message_id from submit_sm_resp PDU (not receipted_message_id)
+            message_id = pdu.message_id if hasattr(pdu, 'message_id') else str(pdu.sequence)
             
             frappe.db.set_value("SMPP SMS Message", sms_doc.name, {
                 "message_id": message_id,
