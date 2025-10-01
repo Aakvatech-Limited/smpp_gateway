@@ -7,6 +7,7 @@ Handles sending SMS via SMPP Gateway for Notifications and other integrations
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from frappe.utils import now
 import json
 import re
 
