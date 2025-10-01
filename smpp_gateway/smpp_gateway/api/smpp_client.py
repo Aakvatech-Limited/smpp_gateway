@@ -309,6 +309,10 @@ class SMPPClient:
             if not self.connected:
                 self.connect()
 
+            # Add query_sm method to the smpplib client if it doesn't exist
+            if not hasattr(self.client, 'query_sm'):
+                self._add_query_sm_method()
+
             # Prepare query_sm parameters
             query_params = {
                 'message_id': str(message_id),
@@ -317,12 +321,8 @@ class SMPPClient:
                 'source_addr': source_addr
             }
 
-            # Create and send query_sm PDU
-            import smpplib.smpp as smpp
-            query_pdu = smpp.make_pdu('query_sm', **query_params)
-
-            self.client.send_pdu(query_pdu)
-            response_pdu = self.client.read_pdu()
+            # Send query_sm using the same pattern as send_message
+            response_pdu = self.client.query_sm(**query_params)
 
             if response_pdu and response_pdu.command == 'query_sm_resp':
                 # Parse response
@@ -359,6 +359,21 @@ class SMPPClient:
             error_msg = f"Query SM failed for message {message_id}: {str(e)}"
             self.logger.error(error_msg)
             return {"success": False, "error": error_msg}
+
+    def _add_query_sm_method(self):
+        """Add query_sm method to the smpplib client dynamically"""
+        import smpplib.smpp as smpp
+
+        def query_sm(client_self, **args):
+            """Query message status - similar to send_message method"""
+            query_pdu = smpp.make_pdu('query_sm', **args)
+            client_self.send_pdu(query_pdu)
+            resp = client_self.read_pdu()
+            return resp
+
+        # Bind the method to the client instance
+        import types
+        self.client.query_sm = types.MethodType(query_sm, self.client)
 
     def _process_delivery_receipt(self, pdu):
         """Process individual delivery receipt"""
