@@ -31,9 +31,6 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {
-	"Notification": "public/js/notification.js"
-}
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -64,7 +61,6 @@ doctype_js = {
 
 # After Migrate
 # -------------
-after_migrate = "smpp_gateway.patches.add_smpp_sms_channel_to_notification.execute"
 
 # Uninstallation
 # ------------
@@ -94,20 +90,20 @@ after_migrate = "smpp_gateway.patches.add_smpp_sms_channel_to_notification.execu
 # ---------------
 # Override standard doctype classes
 
-override_doctype_class = {
-	"Notification": "smpp_gateway.smpp_gateway.overrides.notification_override.SMPPNotification"
-}
+# override_doctype_class = {
+#	"Notification": "smpp_gateway.smpp_gateway.overrides.notification_override.SMPPNotification"
+# }
 
 # Document Events
 # ---------------
 # Hook on document methods and events
 
-doc_events = {
-	"Notification": {
-		"before_insert": "smpp_gateway.smpp_gateway.overrides.notification_override.validate_smpp_channel",
-		"on_update": "smpp_gateway.smpp_gateway.overrides.notification_override.validate_smpp_channel"
-	}
-}
+# doc_events = {
+#	"Notification": {
+#		"before_insert": "smpp_gateway.smpp_gateway.overrides.notification_override.validate_smpp_channel",
+#		"on_update": "smpp_gateway.smpp_gateway.overrides.notification_override.validate_smpp_channel"
+#	}
+# }
 
 # doc_events = {
 #	"*": {
