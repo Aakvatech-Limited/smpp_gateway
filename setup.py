@@ -1,7 +1,6 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-with open("requirements.txt") as f:
-	install_requires = f.read().strip().split("\n")
+install_requires = ["smpplib==2.2.1"]
 
 # get version from __version__ variable in smpp_gateway/__init__.py
 from smpp_gateway import __version__ as version
